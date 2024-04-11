@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  hivemq:
+    image: hivemq/hivemq-ce
+    ports:
+      - "1883:1883"
+      - "8000:8000"
+    depends_on:
+      - db
+
+  metabase:
+    image: metabase/metabase
+    ports:
+      - "3000:3000"
+
+  simulador:
+    build: ./simulador
+    depends_on:
+      - hivemq
+
+  processador:
+    build: ./processador
+    depends_on:
+      - hivemq
+      - db
+
+volumes:
+  postgres_data:
